@@ -1,0 +1,311 @@
+openapi: 3.1.0
+info:
+  title: AgentAI Gateway API
+  version: 0.1.0
+  description: Public API for the AgentAI Mobile App (chat + voice).
+servers:
+  - url: http://localhost:8080
+tags:
+  - name: Health
+  - name: Auth
+  - name: Chat
+  - name: Media
+paths:
+  /healthz:
+    get:
+      tags: [Health]
+      summary: Health check
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  ok: { type: boolean }
+                required: [ok]
+
+  /v1/auth/guest:
+    post:
+      tags: [Auth]
+      summary: Create a guest session
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                deviceId: { type: string, description: Optional stable device id for guest continuity }
+      responses:
+        "200":
+          description: Session created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Session"
+
+  /v1/auth/password/signup:
+    post:
+      tags: [Auth]
+      summary: Sign up with email + password
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                email: { type: string, format: email }
+                password: { type: string, minLength: 8 }
+                displayName: { type: string }
+              required: [email, password]
+      responses:
+        "200":
+          description: Session created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Session"
+
+  /v1/auth/password/login:
+    post:
+      tags: [Auth]
+      summary: Login with email + password
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                email: { type: string, format: email }
+                password: { type: string }
+              required: [email, password]
+      responses:
+        "200":
+          description: Session created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Session"
+
+  /v1/auth/google:
+    post:
+      tags: [Auth]
+      summary: Login with Google ID token
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                idToken: { type: string }
+              required: [idToken]
+      responses:
+        "200":
+          description: Session created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Session"
+
+  /v1/auth/refresh:
+    post:
+      tags: [Auth]
+      summary: Refresh an access token
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                refreshToken: { type: string }
+              required: [refreshToken]
+      responses:
+        "200":
+          description: Session refreshed
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Session"
+
+  /v1/conversations:
+    get:
+      tags: [Chat]
+      summary: List conversations
+      security: [{ bearerAuth: [] }]
+      parameters:
+        - in: query
+          name: pageSize
+          schema: { type: integer, minimum: 1, maximum: 200, default: 50 }
+        - in: query
+          name: pageToken
+          schema: { type: string }
+      responses:
+        "200":
+          description: Conversations page
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  items:
+                    type: array
+                    items: { $ref: "#/components/schemas/Conversation" }
+                  nextPageToken: { type: string, nullable: true }
+                required: [items]
+    post:
+      tags: [Chat]
+      summary: Create conversation
+      security: [{ bearerAuth: [] }]
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                title: { type: string }
+      responses:
+        "200":
+          description: Conversation created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Conversation"
+
+  /v1/conversations/{conversationId}/messages:
+    get:
+      tags: [Chat]
+      summary: List messages in a conversation
+      security: [{ bearerAuth: [] }]
+      parameters:
+        - in: path
+          name: conversationId
+          required: true
+          schema: { type: string, format: uuid }
+        - in: query
+          name: pageSize
+          schema: { type: integer, minimum: 1, maximum: 500, default: 50 }
+        - in: query
+          name: pageToken
+          schema: { type: string }
+      responses:
+        "200":
+          description: Messages page
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  items:
+                    type: array
+                    items: { $ref: "#/components/schemas/Message" }
+                  nextPageToken: { type: string, nullable: true }
+                required: [items]
+    post:
+      tags: [Chat]
+      summary: Create message
+      security: [{ bearerAuth: [] }]
+      parameters:
+        - in: path
+          name: conversationId
+          required: true
+          schema: { type: string, format: uuid }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                role: { type: string, enum: [user, assistant, system] }
+                content: { type: string }
+                audioRef: { type: string, format: uuid, nullable: true }
+              required: [role, content]
+      responses:
+        "200":
+          description: Message created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Message"
+
+  /v1/audio/uploads:
+    post:
+      tags: [Media]
+      summary: Create a signed upload URL for an audio blob
+      security: [{ bearerAuth: [] }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                contentType: { type: string, example: audio/m4a }
+              required: [contentType]
+      responses:
+        "200":
+          description: Upload URL created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AudioUpload"
+
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+  schemas:
+    User:
+      type: object
+      properties:
+        id: { type: string, format: uuid }
+        email: { type: string, format: email, nullable: true }
+        displayName: { type: string, nullable: true }
+        isGuest: { type: boolean }
+      required: [id, isGuest]
+    Session:
+      type: object
+      properties:
+        user: { $ref: "#/components/schemas/User" }
+        accessToken: { type: string }
+        refreshToken: { type: string }
+        expiresInSeconds: { type: integer }
+      required: [user, accessToken, refreshToken, expiresInSeconds]
+    Conversation:
+      type: object
+      properties:
+        id: { type: string, format: uuid }
+        title: { type: string }
+        pinned: { type: boolean }
+        createdAt: { type: string, format: date-time }
+        updatedAt: { type: string, format: date-time }
+      required: [id, createdAt, updatedAt]
+    Message:
+      type: object
+      properties:
+        id: { type: string, format: uuid }
+        conversationId: { type: string, format: uuid }
+        role: { type: string, enum: [user, assistant, system] }
+        content: { type: string }
+        audioRef: { type: string, format: uuid, nullable: true }
+        runId: { type: string, format: uuid, nullable: true }
+        createdAt: { type: string, format: date-time }
+      required: [id, conversationId, role, content, createdAt]
+    AudioUpload:
+      type: object
+      properties:
+        audioRef: { type: string, format: uuid }
+        uploadUrl: { type: string }
+        objectKey: { type: string }
+        expiresInSeconds: { type: integer }
+      required: [audioRef, uploadUrl, objectKey, expiresInSeconds]
+

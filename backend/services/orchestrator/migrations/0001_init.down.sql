@@ -1,0 +1,6 @@
+DROP TABLE IF EXISTS usage_events;
+DROP TABLE IF EXISTS run_attempts;
+DROP TABLE IF EXISTS runs;
+
+DROP FUNCTION IF EXISTS set_updated_at;
+

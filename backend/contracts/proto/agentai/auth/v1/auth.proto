@@ -1,0 +1,95 @@
+syntax = "proto3";
+
+package agentai.auth.v1;
+
+option go_package = "github.com/ryeng/agentai-backend-monorepo/backend/contracts/gen/go/agentai/auth/v1;authv1";
+
+import "agentai/common/v1/common.proto";
+
+service AuthService {
+  rpc CreateGuestSession(CreateGuestSessionRequest) returns (SessionResponse);
+  rpc SignUpPassword(SignUpPasswordRequest) returns (SessionResponse);
+  rpc LoginPassword(LoginPasswordRequest) returns (SessionResponse);
+  rpc LoginGoogle(LoginGoogleRequest) returns (SessionResponse);
+  rpc RefreshSession(RefreshSessionRequest) returns (SessionResponse);
+
+  rpc UpsertProviderCredential(UpsertProviderCredentialRequest) returns (ProviderCredential);
+  rpc ListProviderCredentials(ListProviderCredentialsRequest) returns (ListProviderCredentialsResponse);
+  rpc RevokeProviderCredential(RevokeProviderCredentialRequest) returns (RevokeProviderCredentialResponse);
+}
+
+message User {
+  string id = 1; // uuid
+  string email = 2; // optional
+  string display_name = 3; // optional
+  bool is_guest = 4;
+}
+
+message Session {
+  User user = 1;
+  string access_token = 2;
+  string refresh_token = 3;
+  int32 expires_in_seconds = 4;
+}
+
+message SessionResponse {
+  Session session = 1;
+}
+
+message CreateGuestSessionRequest {
+  string device_id = 1; // optional
+}
+
+message SignUpPasswordRequest {
+  string email = 1;
+  string password = 2;
+  string display_name = 3; // optional
+}
+
+message LoginPasswordRequest {
+  string email = 1;
+  string password = 2;
+}
+
+message LoginGoogleRequest {
+  string id_token = 1;
+}
+
+message RefreshSessionRequest {
+  string refresh_token = 1;
+}
+
+message ProviderCredential {
+  string id = 1; // uuid
+  string user_id = 2; // uuid
+  string provider = 3; // openai | elevenlabs | ...
+  string label = 4; // optional user label
+  bool is_revoked = 5;
+}
+
+message UpsertProviderCredentialRequest {
+  string user_id = 1; // uuid
+  string provider = 2;
+  string label = 3;
+  string api_key = 4;
+}
+
+message ListProviderCredentialsRequest {
+  string user_id = 1; // uuid
+  agentai.common.v1.PageRequest page = 2;
+}
+
+message ListProviderCredentialsResponse {
+  repeated ProviderCredential items = 1;
+  agentai.common.v1.PageResponse page = 2;
+}
+
+message RevokeProviderCredentialRequest {
+  string user_id = 1; // uuid
+  string credential_id = 2; // uuid
+}
+
+message RevokeProviderCredentialResponse {
+  bool ok = 1;
+}
+

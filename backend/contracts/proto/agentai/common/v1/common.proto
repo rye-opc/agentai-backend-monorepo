@@ -1,0 +1,15 @@
+syntax = "proto3";
+
+package agentai.common.v1;
+
+option go_package = "github.com/ryeng/agentai-backend-monorepo/backend/contracts/gen/go/agentai/common/v1;commonv1";
+
+message PageRequest {
+  int32 page_size = 1;
+  string page_token = 2;
+}
+
+message PageResponse {
+  string next_page_token = 1;
+}
+

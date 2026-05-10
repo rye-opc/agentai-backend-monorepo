@@ -1,0 +1,14 @@
+go 1.25.0
+
+toolchain go1.25.10
+
+use (
+	./contracts
+	./libs
+	./services/auth
+	./services/chat
+	./services/gateway
+	./services/media
+	./services/orchestrator
+	./services/worker
+)

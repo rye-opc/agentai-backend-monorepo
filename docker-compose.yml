@@ -1,0 +1,45 @@
+services:
+  postgres:
+    image: postgres:16
+    environment:
+      POSTGRES_USER: agentai
+      POSTGRES_PASSWORD: agentai
+      POSTGRES_DB: postgres
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+      - ./deploy/local/postgres/init.sql:/docker-entrypoint-initdb.d/01-init.sql:ro
+
+  redis:
+    image: redis:7
+    ports:
+      - "6379:6379"
+
+  minio:
+    image: minio/minio:latest
+    command: server /data --console-address ":9001"
+    environment:
+      MINIO_ROOT_USER: minio
+      MINIO_ROOT_PASSWORD: miniosecret
+    ports:
+      - "9000:9000"
+      - "9001:9001"
+    volumes:
+      - minio-data:/data
+
+  minio-create-buckets:
+    image: minio/mc:latest
+    depends_on:
+      - minio
+    entrypoint:
+      [
+        "/bin/sh",
+        "-c",
+        "until (/usr/bin/mc alias set local http://minio:9000 minio miniosecret) do echo '...waiting for minio' && sleep 1; done; /usr/bin/mc mb -p local/agentai-audio || true; /usr/bin/mc anonymous set private local/agentai-audio || true;",
+      ]
+
+volumes:
+  postgres-data:
+  minio-data:
+

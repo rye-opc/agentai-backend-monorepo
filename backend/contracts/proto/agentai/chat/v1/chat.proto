@@ -1,0 +1,70 @@
+syntax = "proto3";
+
+package agentai.chat.v1;
+
+option go_package = "github.com/ryeng/agentai-backend-monorepo/backend/contracts/gen/go/agentai/chat/v1;chatv1";
+
+import "agentai/common/v1/common.proto";
+
+service ChatService {
+  rpc CreateConversation(CreateConversationRequest) returns (Conversation);
+  rpc ListConversations(ListConversationsRequest) returns (ListConversationsResponse);
+
+  rpc CreateMessage(CreateMessageRequest) returns (Message);
+  rpc ListMessages(ListMessagesRequest) returns (ListMessagesResponse);
+}
+
+message Conversation {
+  string id = 1; // uuid
+  string user_id = 2; // uuid
+  string title = 3;
+  bool pinned = 4;
+  string created_at = 5; // RFC3339
+  string updated_at = 6; // RFC3339
+}
+
+message Message {
+  string id = 1; // uuid
+  string conversation_id = 2; // uuid
+  string user_id = 3; // uuid
+  string role = 4; // user | assistant | system
+  string content = 5;
+  string audio_ref = 6; // uuid (optional)
+  string run_id = 7; // uuid (optional)
+  string created_at = 8; // RFC3339
+}
+
+message CreateConversationRequest {
+  string user_id = 1; // uuid
+  string title = 2;
+}
+
+message ListConversationsRequest {
+  string user_id = 1; // uuid
+  agentai.common.v1.PageRequest page = 2;
+}
+
+message ListConversationsResponse {
+  repeated Conversation items = 1;
+  agentai.common.v1.PageResponse page = 2;
+}
+
+message CreateMessageRequest {
+  string user_id = 1; // uuid
+  string conversation_id = 2; // uuid
+  string role = 3;
+  string content = 4;
+  string audio_ref = 5; // optional
+}
+
+message ListMessagesRequest {
+  string user_id = 1; // uuid
+  string conversation_id = 2; // uuid
+  agentai.common.v1.PageRequest page = 3;
+}
+
+message ListMessagesResponse {
+  repeated Message items = 1;
+  agentai.common.v1.PageResponse page = 2;
+}
+

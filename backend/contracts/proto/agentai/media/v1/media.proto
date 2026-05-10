@@ -1,0 +1,22 @@
+syntax = "proto3";
+
+package agentai.media.v1;
+
+option go_package = "github.com/ryeng/agentai-backend-monorepo/backend/contracts/gen/go/agentai/media/v1;mediav1";
+
+service MediaService {
+  rpc CreateAudioUpload(CreateAudioUploadRequest) returns (CreateAudioUploadResponse);
+}
+
+message CreateAudioUploadRequest {
+  string user_id = 1; // uuid
+  string content_type = 2; // e.g. audio/m4a
+}
+
+message CreateAudioUploadResponse {
+  string audio_ref = 1; // uuid
+  string upload_url = 2;
+  string object_key = 3;
+  int32 expires_in_seconds = 4;
+}
+

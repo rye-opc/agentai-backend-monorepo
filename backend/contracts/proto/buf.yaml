@@ -1,0 +1,9 @@
+version: v1
+name: buf.build/ryeng/agentai
+breaking:
+  use:
+    - FILE
+lint:
+  use:
+    - DEFAULT
+
