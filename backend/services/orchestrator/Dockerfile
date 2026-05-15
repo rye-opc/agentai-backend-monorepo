@@ -9,7 +9,7 @@ RUN apk add --no-cache ca-certificates
 ENV CGO_ENABLED=0
 ENV GOTOOLCHAIN=local
 
-COPY go.work go.work.sum ./
+COPY go.work* ./
 COPY contracts ./contracts
 COPY libs ./libs
 COPY services ./services
