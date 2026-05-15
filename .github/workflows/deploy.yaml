@@ -5,6 +5,10 @@ on:
     branches: [staging]
   workflow_dispatch: {}
 
+permissions:
+  contents: read
+  packages: write
+
 jobs:
   build:
     name: "Build & Push (${{ matrix.app_name }})"
