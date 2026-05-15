@@ -46,11 +46,6 @@ jobs:
       environment: staging
       image_tag: ${{ github.sha }}
       helmrelease_name: agentai-gateway
-      extra_tag_files: >-
-        agentai-auth
-        agentai-chat
-        agentai-media
-        agentai-orchestrator
-        agentai-worker
+      extra_tag_files: agentai-auth agentai-chat agentai-media agentai-orchestrator agentai-worker
     secrets:
       DEPLOY_TOKEN: ${{ secrets.DEPLOY_TOKEN }}
