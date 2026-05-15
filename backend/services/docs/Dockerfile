@@ -1,4 +1,4 @@
-FROM nginx:alpine
+FROM nginxinc/nginx-unprivileged:alpine
 
 COPY services/docs/nginx.conf /etc/nginx/conf.d/default.conf
 COPY services/docs/index.html /usr/share/nginx/html/index.html
