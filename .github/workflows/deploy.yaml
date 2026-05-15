@@ -28,6 +28,8 @@ jobs:
             dockerfile_path: ./backend/services/orchestrator/Dockerfile
           - app_name: agentai-worker
             dockerfile_path: ./backend/services/worker/Dockerfile
+          - app_name: agentai-docs
+            dockerfile_path: ./backend/services/docs/Dockerfile
     uses: rye-opc/github-workflows/.github/workflows/build.push.yaml@main
     with:
       app_name: ${{ matrix.app_name }}
@@ -46,6 +48,6 @@ jobs:
       environment: staging
       image_tag: ${{ github.sha }}
       helmrelease_name: agentai-gateway
-      extra_tag_files: agentai-auth agentai-chat agentai-media agentai-orchestrator agentai-worker
+      extra_tag_files: agentai-auth agentai-chat agentai-media agentai-orchestrator agentai-worker agentai-docs
     secrets:
       DEPLOY_TOKEN: ${{ secrets.DEPLOY_TOKEN }}
