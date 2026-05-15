@@ -47,6 +47,48 @@ go run ./services/gateway/cmd/gateway
 
 3) (Optional) run migrations on startup by setting `DB_RUN_MIGRATIONS=true` for each service.
 
+## Staging deployment (K3s via rye-charts)
+
+This repo deploys to K3s using the `rye-opc/rye-charts` Flux + Helm GitOps setup.
+
+- **CI**: `.github/workflows/deploy.yaml` builds/pushes per-service images (ARM64) and updates GitOps tags.
+- **GitOps**: `rye-charts/apps/staging/agentai-*.yaml` (gateway/auth/chat/media/orchestrator/worker + postgres + minio).
+
+### Required secrets
+
+1) **GitHub Actions (this repo)**
+
+- `DEPLOY_TOKEN`: classic PAT with `repo` + `write:packages` (push GHCR + commit to `rye-charts`)
+
+2) **Kubernetes (staging namespace)**
+
+The staging namespace must have a Secret named `secrets` containing:
+
+- `agentai_postgres_admin_password`
+- `agentai_postgres_user_password`
+- `agentai_auth_database_url`
+- `agentai_chat_database_url`
+- `agentai_media_database_url`
+- `agentai_orchestrator_database_url`
+- `agentai_auth_jwt_private_key_pem`
+- `agentai_auth_kms_master_key_base64`
+- `agentai_google_oauth_client_id` (optional)
+- `agentai_minio_root_user`
+- `agentai_minio_root_password`
+
+### Deploy to staging
+
+Push to `staging` to trigger the pipeline:
+
+```bash
+git push origin staging
+```
+
+### Default URLs (staging)
+
+- API gateway: `https://agentai.staging.ryenguyen.dev`
+- S3 (MinIO): `https://agentai-s3.staging.ryenguyen.dev`
+
 ## Notes
 
 - This repo implements **steps 1–3** of the architecture plan first (repo/contracts → schema/migrations → core auth/chat/media).

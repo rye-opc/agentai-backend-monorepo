@@ -1,0 +1,52 @@
+name: "Deploy: Staging (monorepo)"
+
+on:
+  push:
+    branches: [staging]
+  workflow_dispatch: {}
+
+jobs:
+  build:
+    name: "Build & Push (${{ matrix.app_name }})"
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - app_name: agentai-gateway
+            dockerfile_path: ./backend/services/gateway/Dockerfile
+          - app_name: agentai-auth
+            dockerfile_path: ./backend/services/auth/Dockerfile
+          - app_name: agentai-chat
+            dockerfile_path: ./backend/services/chat/Dockerfile
+          - app_name: agentai-media
+            dockerfile_path: ./backend/services/media/Dockerfile
+          - app_name: agentai-orchestrator
+            dockerfile_path: ./backend/services/orchestrator/Dockerfile
+          - app_name: agentai-worker
+            dockerfile_path: ./backend/services/worker/Dockerfile
+    uses: rye-opc/rye-charts/.github/workflows/build.push.yaml@main
+    with:
+      app_name: ${{ matrix.app_name }}
+      dockerfile_path: ${{ matrix.dockerfile_path }}
+      build_context: ./backend
+    secrets:
+      DEPLOY_TOKEN: ${{ secrets.DEPLOY_TOKEN }}
+
+  deploy:
+    name: "Update GitOps tags (staging)"
+    needs: build
+    uses: rye-opc/rye-charts/.github/workflows/deploy.update-tag.yaml@main
+    with:
+      # Logical group name for commit message + notifications (not tied to a single image).
+      app_name: agentai
+      environment: staging
+      image_tag: ${{ github.sha }}
+      helmrelease_name: agentai-gateway
+      extra_tag_files: >-
+        agentai-auth
+        agentai-chat
+        agentai-media
+        agentai-orchestrator
+        agentai-worker
+    secrets:
+      DEPLOY_TOKEN: ${{ secrets.DEPLOY_TOKEN }}
