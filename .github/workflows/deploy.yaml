@@ -24,7 +24,7 @@ jobs:
             dockerfile_path: ./backend/services/orchestrator/Dockerfile
           - app_name: agentai-worker
             dockerfile_path: ./backend/services/worker/Dockerfile
-    uses: rye-opc/rye-charts/.github/workflows/build.push.yaml@main
+    uses: rye-opc/github-workflows/.github/workflows/build.push.yaml@main
     with:
       app_name: ${{ matrix.app_name }}
       dockerfile_path: ${{ matrix.dockerfile_path }}
@@ -35,7 +35,7 @@ jobs:
   deploy:
     name: "Update GitOps tags (staging)"
     needs: build
-    uses: rye-opc/rye-charts/.github/workflows/deploy.update-tag.yaml@main
+    uses: rye-opc/github-workflows/.github/workflows/deploy.update-tag.yaml@main
     with:
       # Logical group name for commit message + notifications (not tied to a single image).
       app_name: agentai
