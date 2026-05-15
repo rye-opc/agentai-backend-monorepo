@@ -4,7 +4,10 @@ info:
   version: 0.1.0
   description: Public API for the AgentAI Mobile App (chat + voice).
 servers:
+  - url: https://agentai.staging.ryenguyen.dev
+    description: Staging
   - url: http://localhost:8080
+    description: Local
 tags:
   - name: Health
   - name: Auth
